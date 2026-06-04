@@ -8,8 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     use HasUuids;
+
     protected $keyType = 'uuid';
-    protected $guarded = [];
-   
-    //
+
+    protected $fillable = [
+        'branch_code',
+        'name',
+        'city',
+        'address',
+        'status',
+    ];
 }

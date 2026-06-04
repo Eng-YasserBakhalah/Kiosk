@@ -8,26 +8,22 @@ class DeviceService
 {
     public function heartbeat(array $data): array
     {
-        $device = TerminalDevice::where(
-            'device_code',
-            $data['device_id']
-        )->first();
+        $device = TerminalDevice::where('device_code', $data['device_id'])
+            ->first();
 
-        if (!$device) {
-
+        if (! $device) {
             return [
                 'success' => false,
                 'message' => 'Device not registered',
-                'status_code' => 404
+                'status_code' => 404,
             ];
         }
 
         if ($device->status !== 'ACTIVE') {
-
             return [
                 'success' => false,
                 'message' => 'Device inactive',
-                'status_code' => 403
+                'status_code' => 403,
             ];
         }
 
@@ -42,7 +38,7 @@ class DeviceService
             'message' => 'Heartbeat accepted',
             'device_id' => $device->device_code,
             'last_heartbeat_at' => $device->last_heartbeat_at,
-            'status_code' => 200
+            'status_code' => 200,
         ];
     }
 }

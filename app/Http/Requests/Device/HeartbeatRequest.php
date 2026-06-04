@@ -14,7 +14,7 @@ class HeartbeatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => 'required|string',
+            'device_id' => 'required|string|max:100',
             'app_version' => 'required|string|max:50',
             'ip_address' => 'required|ip',
             'status' => 'nullable|in:ONLINE,DEGRADED,OFFLINE',

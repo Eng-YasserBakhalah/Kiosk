@@ -2,20 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-class DigitalServiceUser
-    extends Authenticatable
-    implements JWTSubject
+class DigitalServiceUser extends Authenticatable implements JWTSubject
 {
     use HasUuids;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'bank_customer_ref',
+        'username',
+        'phone_masked',
+        'password_hash',
+        'biometric_enabled',
+        'status',
+        'failed_login_attempts',
+        'locked_until',
+        'last_login_at',
+    ];
 
     protected $hidden = [
-        'password_hash'
+        'password_hash',
+    ];
+
+    protected $casts = [
+        'biometric_enabled' => 'boolean',
+        'locked_until' => 'datetime',
+        'last_login_at' => 'datetime',
     ];
 
     public function getJWTIdentifier()

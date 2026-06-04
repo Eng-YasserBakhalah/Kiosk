@@ -12,26 +12,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('login_logs', function (Blueprint $table) {
-             $table->uuid('id')->primary();
+            $table->uuid('id')->primary();
 
-    $table->uuid('user_id')
-        ->nullable();
+            $table->uuid('user_id')
+                ->nullable();
 
-    $table->string('device_id')
-        ->nullable();
+            $table->string('device_id')
+                ->nullable();
 
-    $table->string('login_method')
-        ->nullable();
+            $table->string('login_method')
+                ->nullable();
 
-    $table->string('ip_address')
-        ->nullable();
+            $table->string('ip_address')
+                ->nullable();
 
-    $table->boolean('success');
+            $table->boolean('success');
 
-    $table->string('failure_reason')
-        ->nullable();
+            $table->string('failure_reason')
+                ->nullable();
 
-    $table->timestamps();
+            $table->timestamps();
         });
     }
 

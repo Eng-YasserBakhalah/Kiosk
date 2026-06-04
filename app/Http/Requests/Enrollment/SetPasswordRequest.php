@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Enrollment;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class SetPasswordRequest extends FormRequest
 {
@@ -18,7 +19,9 @@ class SetPasswordRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'min:8'
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers(),
             ],
         ];
     }

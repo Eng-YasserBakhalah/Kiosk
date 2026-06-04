@@ -14,28 +14,28 @@ return new class extends Migration
         Schema::create('otp_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-    $table->uuid('user_id')
-        ->nullable();
+            $table->uuid('user_id')
+                ->nullable();
 
-    $table->string('phone_masked', 30);
+            $table->string('phone_masked', 30);
 
-    $table->string('purpose', 80);
+            $table->string('purpose', 80);
 
-    $table->text('otp_hash');
+            $table->text('otp_hash');
 
-    $table->integer('attempts')
-        ->default(0);
+            $table->integer('attempts')
+                ->default(0);
 
-    $table->enum('status', [
-        'PENDING',
-        'VERIFIED',
-        'EXPIRED',
-        'FAILED'
-    ])->default('PENDING');
+            $table->enum('status', [
+                'PENDING',
+                'VERIFIED',
+                'EXPIRED',
+                'FAILED',
+            ])->default('PENDING');
 
-    $table->timestamp('expires_at');
+            $table->timestamp('expires_at');
 
-    $table->timestamps();
+            $table->timestamps();
         });
     }
 

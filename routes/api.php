@@ -1,15 +1,14 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+    return auth('api')->user();
+})->middleware('jwt.auth');
 
 Route::prefix('v1')->group(function () {
 
@@ -65,10 +64,10 @@ Route::prefix('v1')->group(function () {
     Route::middleware('jwt.auth')
         ->group(function () {
 
-        Route::post(
-            '/auth/logout',
-            [AuthController::class, 'logout']
-        );
+            Route::post(
+                '/auth/logout',
+                [AuthController::class, 'logout']
+            );
 
-    });
+        });
 });

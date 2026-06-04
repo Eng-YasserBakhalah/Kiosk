@@ -12,20 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('branches', function (Blueprint $table) {
-            
-    $table->uuid('id')->primary();
 
-    $table->string('branch_code')->unique();
-    $table->string('name');
-    $table->string('city')->nullable();
-    $table->text('address')->nullable();
+            $table->uuid('id')->primary();
 
-    $table->enum('status', [
-        'ACTIVE',
-        'INACTIVE'
-    ])->default('ACTIVE');
+            $table->string('branch_code')->unique();
+            $table->string('name');
+            $table->string('city')->nullable();
+            $table->text('address')->nullable();
 
-    $table->timestamps();
+            $table->enum('status', [
+                'ACTIVE',
+                'INACTIVE',
+            ])->default('ACTIVE');
+
+            $table->timestamps();
 
         });
     }

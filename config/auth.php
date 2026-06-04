@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DigitalServiceUser;
 use App\Models\User;
 
 return [
@@ -64,7 +65,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-             'model' => App\Models\DigitalServiceUser::class,
+            'model' => DigitalServiceUser::class,
         ],
 
         // 'users' => [

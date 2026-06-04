@@ -2,12 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class LoginLog extends Model
 {
     use HasUuids;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'device_id',
+        'login_method',
+        'ip_address',
+        'success',
+        'failure_reason',
+    ];
+
+    protected $casts = [
+        'success' => 'boolean',
+    ];
 }

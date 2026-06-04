@@ -11,42 +11,42 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('terminal_devices', function (Blueprint $table) {
+        Schema::create('terminal_devices', function (Blueprint $table) {
 
             $table->uuid('id')->primary();
 
             $table->foreignUuid('branch_id')
-        ->constrained()
-        ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             $table->string('device_code')->unique();
 
             $table->string('serial_number')
-        ->nullable();
+                ->nullable();
 
             $table->string('location_label')
-        ->nullable();
+                ->nullable();
 
             $table->string('ip_address', 45)
-        ->nullable();
+                ->nullable();
 
             $table->string('app_version')
-        ->nullable();
+                ->nullable();
 
             $table->string('os_version')
-        ->nullable();
+                ->nullable();
 
             $table->enum('status', [
-        'ACTIVE',
-        'INACTIVE',
-        'OFFLINE'
+                'ACTIVE',
+                'INACTIVE',
+                'OFFLINE',
             ])->default('ACTIVE');
 
             $table->boolean('kiosk_mode_enabled')
-        ->default(true);
+                ->default(true);
 
             $table->timestamp('last_heartbeat_at')
-        ->nullable();
+                ->nullable();
 
             $table->timestamps();
         });

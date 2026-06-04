@@ -8,14 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 class TerminalDevice extends Model
 {
     use HasUuids;
+
     protected $keyType = 'uuid';
-    protected $guarded = [];
-      protected $casts = [
+
+    protected $fillable = [
+        'branch_id',
+        'device_code',
+        'serial_number',
+        'location_label',
+        'ip_address',
+        'app_version',
+        'os_version',
+        'status',
+        'kiosk_mode_enabled',
+        'last_heartbeat_at',
+    ];
+
+    protected $casts = [
         'last_heartbeat_at' => 'datetime',
         'kiosk_mode_enabled' => 'boolean',
     ];
-
-
-    
-    //
 }

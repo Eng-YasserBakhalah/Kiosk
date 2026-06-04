@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Services\AuthService;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
@@ -16,7 +16,6 @@ class AuthController extends Controller
     public function login(
         LoginRequest $request
     ): JsonResponse {
-
         $result = $this->authService
             ->login(
                 $request->validated()
@@ -28,15 +27,16 @@ class AuthController extends Controller
             $result['status_code']
         );
     }
-    public function logout(): JsonResponse
-{
-    $result = $this->authService
-        ->logout();
 
-    return response()->json(
-        collect($result)
-            ->except('status_code'),
-        $result['status_code']
-    );
-}
+    public function logout(): JsonResponse
+    {
+        $result = $this->authService
+            ->logout();
+
+        return response()->json(
+            collect($result)
+                ->except('status_code'),
+            $result['status_code']
+        );
+    }
 }

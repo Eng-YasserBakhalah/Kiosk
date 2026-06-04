@@ -34,7 +34,7 @@ return new class extends Migration
                 'PENDING',
                 'ACTIVE',
                 'LOCKED',
-                'DISABLED'
+                'DISABLED',
             ])->default('PENDING');
 
             $table->integer('failed_login_attempts')

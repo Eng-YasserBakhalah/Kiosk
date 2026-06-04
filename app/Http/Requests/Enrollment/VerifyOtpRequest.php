@@ -15,7 +15,7 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             'request_id' => 'required|uuid',
-            'otp' => 'required|string|min:6|max:6',
+            'otp' => 'required|string|regex:/^[0-9]{6}$/',
         ];
     }
 }

@@ -14,8 +14,8 @@ class StartEnrollmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => 'required|string',
-            'customer_identifier' => 'required|string',
+            'device_id' => 'required|string|max:100',
+            'customer_identifier' => 'required|string|max:100',
             'phone' => 'required|string|min:9|max:20',
         ];
     }

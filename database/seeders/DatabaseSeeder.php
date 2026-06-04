@@ -2,24 +2,45 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Branch;
+use App\Models\DigitalServiceUser;
+use App\Models\TerminalDevice;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $branch = Branch::updateOrCreate(
+            ['branch_code' => 'BR-001'],
+            [
+                'name' => 'Main Branch',
+                'city' => 'Riyadh',
+                'address' => 'Main service branch',
+                'status' => 'ACTIVE',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        TerminalDevice::updateOrCreate(
+            ['device_code' => 'KIOSK-001'],
+            [
+                'branch_id' => $branch->id,
+                'serial_number' => 'SN-KIOSK-001',
+                'location_label' => 'Lobby',
+                'status' => 'ACTIVE',
+                'kiosk_mode_enabled' => true,
+            ]
+        );
+
+        DigitalServiceUser::updateOrCreate(
+            ['username' => 'USR10001'],
+            [
+                'bank_customer_ref' => 'BANK-100001',
+                'phone_masked' => '+966*******000',
+                'password_hash' => Hash::make('Password1'),
+                'status' => 'ACTIVE',
+            ]
+        );
     }
 }

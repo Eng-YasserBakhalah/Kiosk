@@ -6,6 +6,10 @@ use App\Models\DigitalServiceUser;
 use App\Models\LoginLog;
 use App\Models\TerminalDevice;
 use Illuminate\Support\Facades\Hash;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthService
@@ -111,7 +115,7 @@ class AuthService
     public function logout(): array
     {
         try {
-            $token = JWTAuth::getToken();
+            $token = request()->bearerToken();
 
             if (! $token) {
                 return [
@@ -121,12 +125,31 @@ class AuthService
                 ];
             }
 
-            JWTAuth::invalidate($token);
+            JWTAuth::setToken($token)->checkOrFail();
+            JWTAuth::setToken($token)->invalidate();
 
             return [
                 'success' => true,
                 'message' => 'Logged out successfully',
                 'status_code' => 200,
+            ];
+        } catch (TokenBlacklistedException) {
+            return [
+                'success' => false,
+                'message' => 'Token already logged out',
+                'status_code' => 401,
+            ];
+        } catch (TokenExpiredException) {
+            return [
+                'success' => false,
+                'message' => 'Token expired',
+                'status_code' => 401,
+            ];
+        } catch (TokenInvalidException|JWTException) {
+            return [
+                'success' => false,
+                'message' => 'Invalid token',
+                'status_code' => 401,
             ];
         } catch (\Throwable) {
             return [

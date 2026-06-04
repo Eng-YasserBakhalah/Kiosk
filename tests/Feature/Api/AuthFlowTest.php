@@ -42,6 +42,46 @@ class AuthFlowTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
+    public function test_logout_without_token_returns_unauthorized_json(): void
+    {
+        $this->postJson('/api/v1/auth/logout')
+            ->assertUnauthorized()
+            ->assertJson([
+                'success' => false,
+                'message' => 'Token not provided',
+            ]);
+    }
+
+    public function test_logout_with_already_invalidated_token_returns_unauthorized_json(): void
+    {
+        $this->createActiveDevice();
+
+        DigitalServiceUser::create([
+            'bank_customer_ref' => 'BANK-100001',
+            'username' => 'USR10001',
+            'phone_masked' => '+966*******000',
+            'password_hash' => Hash::make('Password1'),
+            'status' => 'ACTIVE',
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'device_id' => 'KIOSK-001',
+            'username' => 'USR10001',
+            'password' => 'Password1',
+        ]);
+
+        $token = $login->json('token');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/auth/logout')
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/auth/logout')
+            ->assertUnauthorized()
+            ->assertJsonPath('success', false);
+    }
+
     public function test_account_locks_after_repeated_failed_password_attempts(): void
     {
         $this->createActiveDevice();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DigitalService;
 use App\Models\ServiceTransaction;
 use App\Services\Bank\BankApiAdapter;
+use App\Services\ServiceCatalogService;
 use App\Services\SessionContextService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,8 @@ class AccountController extends Controller
 {
     public function __construct(
         protected SessionContextService $sessionContext,
-        protected BankApiAdapter $bankApi
+        protected BankApiAdapter $bankApi,
+        protected ServiceCatalogService $serviceCatalog
     ) {}
 
     public function index(): JsonResponse
@@ -24,6 +26,10 @@ class AccountController extends Controller
 
         if (! $session) {
             return ApiResponse::error('SESSION_EXPIRED', 'Session is not active', 401);
+        }
+
+        if (! $this->serviceAvailable($session, 'ACCOUNTS_LIST')) {
+            return $this->serviceUnavailable('ACCOUNTS_LIST');
         }
 
         $requestId = request()->attributes->get('request_id');
@@ -44,6 +50,10 @@ class AccountController extends Controller
             return ApiResponse::error('SESSION_EXPIRED', 'Session is not active', 401);
         }
 
+        if (! $this->serviceAvailable($session, 'BALANCE_INQUIRY')) {
+            return $this->serviceUnavailable('BALANCE_INQUIRY');
+        }
+
         $requestId = request()->attributes->get('request_id');
         $bankResponse = $this->bankApi->balance($session, $requestId, $accountId);
 
@@ -60,6 +70,10 @@ class AccountController extends Controller
 
         if (! $session) {
             return ApiResponse::error('SESSION_EXPIRED', 'Session is not active', 401);
+        }
+
+        if (! $this->serviceAvailable($session, 'SHORT_STATEMENT')) {
+            return $this->serviceUnavailable('SHORT_STATEMENT');
         }
 
         $requestId = $request->attributes->get('request_id');
@@ -95,5 +109,22 @@ class AccountController extends Controller
             'completed_at' => now(),
             'metadata' => $bankResponse['payload'],
         ]);
+    }
+
+    private function serviceAvailable($session, string $serviceCode): bool
+    {
+        return $this->serviceCatalog->isEnabledForBranch(
+            $serviceCode,
+            $session->terminalDevice->branch_id
+        );
+    }
+
+    private function serviceUnavailable(string $serviceCode): JsonResponse
+    {
+        return ApiResponse::error(
+            'SERVICE_NOT_ALLOWED_ON_DEVICE',
+            "Service {$serviceCode} is not available for this device",
+            403
+        );
     }
 }

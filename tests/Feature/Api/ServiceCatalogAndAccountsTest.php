@@ -77,6 +77,21 @@ class ServiceCatalogAndAccountsTest extends TestCase
         ]);
     }
 
+    public function test_account_service_is_rejected_when_disabled_for_branch(): void
+    {
+        $token = $this->loginWithSeededChannel();
+
+        $service = DigitalService::where('service_code', 'BALANCE_INQUIRY')->first();
+        BranchServiceSetting::where('service_id', $service->id)->update([
+            'enabled' => false,
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/accounts/ACC-001/balance')
+            ->assertForbidden()
+            ->assertJsonPath('error.code', 'SERVICE_NOT_ALLOWED_ON_DEVICE');
+    }
+
     private function loginWithSeededChannel(): string
     {
         $branch = Branch::create([

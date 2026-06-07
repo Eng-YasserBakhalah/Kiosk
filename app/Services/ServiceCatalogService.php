@@ -32,4 +32,16 @@ class ServiceCatalogService
             ])
             ->all();
     }
+
+    public function isEnabledForBranch(string $serviceCode, string $branchId): bool
+    {
+        return DigitalService::query()
+            ->where('service_code', $serviceCode)
+            ->where('enabled', true)
+            ->whereHas('branchSettings', fn ($query) => $query
+                ->where('branch_id', $branchId)
+                ->where('enabled', true)
+            )
+            ->exists();
+    }
 }

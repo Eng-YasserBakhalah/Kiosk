@@ -30,4 +30,9 @@ class DigitalService extends Model
         'min_amount' => 'decimal:2',
         'max_amount' => 'decimal:2',
     ];
+
+    public function branchSettings()
+    {
+        return $this->hasMany(BranchServiceSetting::class, 'service_id');
+    }
 }

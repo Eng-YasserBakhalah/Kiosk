@@ -25,6 +25,16 @@ Route::prefix('v1')->group(function () {
         [DeviceController::class, 'heartbeat']
     );
 
+    Route::post(
+        '/devices/register',
+        [DeviceController::class, 'register']
+    );
+
+    Route::get(
+        '/devices/{device_id}/status',
+        [DeviceController::class, 'status']
+    );
+
     /*
     |--------------------------------------------------------------------------
     | Enrollment
@@ -81,6 +91,16 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/accounts/{account_id}/statement',
             [AccountController::class, 'statement']
+        );
+
+        Route::post(
+            '/admin/devices/{device_id}/enable',
+            [DeviceController::class, 'enable']
+        );
+
+        Route::post(
+            '/admin/devices/{device_id}/disable',
+            [DeviceController::class, 'disable']
         );
     });
 });

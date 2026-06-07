@@ -28,4 +28,9 @@ class TerminalDevice extends Model
         'last_heartbeat_at' => 'datetime',
         'kiosk_mode_enabled' => 'boolean',
     ];
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

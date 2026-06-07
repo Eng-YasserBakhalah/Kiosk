@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
+use App\Http\Controllers\Api\V1\Transfers\TransferController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -91,6 +92,11 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/accounts/{account_id}/statement',
             [AccountController::class, 'statement']
+        );
+
+        Route::post(
+            '/transfers/internal',
+            [TransferController::class, 'internal']
         );
 
         Route::post(

@@ -34,4 +34,9 @@ class ServiceTransaction extends Model
         'completed_at' => 'datetime',
         'metadata' => 'array',
     ];
+
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class, 'transaction_id');
+    }
 }

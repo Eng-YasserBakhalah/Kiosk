@@ -76,25 +76,59 @@ class BankApiAdapter
         ]);
     }
 
-    private function recordMockCall(AuthSession $session, string $requestId, string $endpointKey, array $response): array
+    public function internalTransfer(AuthSession $session, string $requestId, array $payload): array
     {
+        return $this->recordMockCall($session, $requestId, 'transfers.internal', [
+            'bank_success' => true,
+            'bank_reference' => 'MOCK-TRF-'.now()->format('YmdHis'),
+            'bank_code' => '00',
+            'message' => 'Approved',
+            'payload' => [
+                'from_account_id' => $payload['from_account_id'],
+                'to_account_identifier' => $this->maskAccount($payload['to_account_identifier']),
+                'amount' => number_format((float) $payload['amount'], 2, '.', ''),
+                'currency' => $payload['currency'],
+                'purpose' => $payload['purpose'] ?? null,
+                'status' => 'APPROVED',
+            ],
+        ], 'POST', [
+            'from_account_id' => $payload['from_account_id'],
+            'to_account_identifier' => $this->maskAccount($payload['to_account_identifier']),
+            'amount' => $payload['amount'],
+            'currency' => $payload['currency'],
+        ]);
+    }
+
+    private function recordMockCall(
+        AuthSession $session,
+        string $requestId,
+        string $endpointKey,
+        array $response,
+        string $method = 'GET',
+        ?array $maskedRequest = null
+    ): array {
         ApiIntegrationLog::create([
             'request_id' => $requestId,
             'user_id' => $session->user_id,
             'terminal_device_id' => $session->terminal_device_id,
             'external_api_name' => 'mock_bank_core',
             'endpoint_key' => $endpointKey,
-            'http_method' => 'GET',
+            'http_method' => $method,
             'response_status' => 200,
             'bank_response_code' => $response['bank_code'],
             'duration_ms' => 1,
             'success' => $response['bank_success'],
-            'masked_request' => [
+            'masked_request' => $maskedRequest ?? [
                 'user_id' => $session->user_id,
             ],
             'masked_response' => $response['payload'],
         ]);
 
         return $response;
+    }
+
+    private function maskAccount(string $value): string
+    {
+        return '****'.substr($value, -4);
     }
 }

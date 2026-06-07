@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Services\ErrorLogService;
 use Illuminate\Http\JsonResponse;
 
 class ApiResponse
@@ -23,8 +24,18 @@ class ApiResponse
         string $code,
         string $message,
         int $status = 400,
-        mixed $details = null
+        mixed $details = null,
+        ?string $serviceCode = null,
+        ?string $source = null,
     ): JsonResponse {
+        app(ErrorLogService::class)->log(
+            $code,
+            $message,
+            $serviceCode,
+            $source,
+            $details
+        );
+
         return response()->json([
             'success' => false,
             'request_id' => request()->attributes->get('request_id'),

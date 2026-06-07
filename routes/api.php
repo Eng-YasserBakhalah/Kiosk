@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Accounts\AccountController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -59,4 +61,26 @@ Route::prefix('v1')->group(function () {
         '/auth/logout',
         [AuthController::class, 'logout']
     );
+
+    Route::middleware('jwt.auth')->group(function () {
+        Route::get(
+            '/services',
+            [ServiceCatalogController::class, 'index']
+        );
+
+        Route::get(
+            '/accounts',
+            [AccountController::class, 'index']
+        );
+
+        Route::get(
+            '/accounts/{account_id}/balance',
+            [AccountController::class, 'balance']
+        );
+
+        Route::get(
+            '/accounts/{account_id}/statement',
+            [AccountController::class, 'statement']
+        );
+    });
 });

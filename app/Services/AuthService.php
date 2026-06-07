@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AuthSession;
 use App\Models\DigitalServiceUser;
 use App\Models\LoginLog;
 use App\Models\TerminalDevice;
@@ -98,6 +99,18 @@ class AuthService
 
         $token = JWTAuth::fromUser($user);
 
+        AuthSession::create([
+            'user_id' => $user->id,
+            'terminal_device_id' => $device->id,
+            'access_token_hash' => hash('sha256', $token),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'login_method' => 'PASSWORD',
+            'login_at' => now(),
+            'expires_at' => now()->addMinutes((int) config('jwt.ttl', 60)),
+            'status' => 'ACTIVE',
+        ]);
+
         $this->logAttempt($user, $data['device_id'], true);
 
         return [
@@ -127,6 +140,13 @@ class AuthService
 
             JWTAuth::setToken($token)->checkOrFail();
             JWTAuth::setToken($token)->invalidate();
+
+            AuthSession::where('access_token_hash', hash('sha256', $token))
+                ->where('status', 'ACTIVE')
+                ->update([
+                    'status' => 'LOGGED_OUT',
+                    'logout_at' => now(),
+                ]);
 
             return [
                 'success' => true,

@@ -6,6 +6,8 @@ use App\Models\Branch;
 use App\Models\BranchServiceSetting;
 use App\Models\DigitalService;
 use App\Models\DigitalServiceUser;
+use App\Models\Receipt;
+use App\Models\ServiceTransaction;
 use App\Models\TerminalDevice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -80,6 +82,62 @@ class InternalTransferTest extends TestCase
 
         $this->assertDatabaseCount('service_transactions', 1);
         $this->assertDatabaseCount('receipts', 1);
+    }
+
+    public function test_receipt_can_be_loaded_by_receipt_number_or_bank_reference(): void
+    {
+        $token = $this->loginWithTransferService();
+        $key = (string) Str::uuid();
+
+        $transfer = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Idempotency-Key', $key)
+            ->postJson('/api/v1/transfers/internal', $this->payload());
+
+        $receiptNumber = $transfer->json('data.receipt.receipt_number');
+        $bankReference = $transfer->json('data.transaction.bank_reference');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson("/api/v1/receipts/{$receiptNumber}")
+            ->assertOk()
+            ->assertJsonPath('data.receipt.receipt_number', $receiptNumber)
+            ->assertJsonPath('data.receipt.bank_reference', $bankReference);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson("/api/v1/receipts/{$bankReference}")
+            ->assertOk()
+            ->assertJsonPath('data.receipt.receipt_number', $receiptNumber)
+            ->assertJsonPath('data.receipt.bank_reference', $bankReference);
+    }
+
+    public function test_receipt_for_another_user_is_not_returned(): void
+    {
+        $token = $this->loginWithTransferService();
+
+        $otherTransaction = ServiceTransaction::create([
+            'request_id' => 'REQ-OTHER',
+            'user_id' => DigitalServiceUser::create([
+                'bank_customer_ref' => 'BANK-200001',
+                'username' => 'USR20001',
+                'phone_masked' => '+966*******111',
+                'password_hash' => Hash::make('Password1'),
+                'status' => 'ACTIVE',
+            ])->id,
+            'transaction_type' => 'INTERNAL_TRANSFER',
+            'bank_reference' => 'OTHER-BANK-REF',
+            'status' => 'SUCCESS',
+        ]);
+
+        Receipt::create([
+            'transaction_id' => $otherTransaction->id,
+            'receipt_number' => 'RCT-OTHER',
+            'bank_reference' => 'OTHER-BANK-REF',
+            'masked_payload' => ['status' => 'SUCCESS'],
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/receipts/RCT-OTHER')
+            ->assertNotFound()
+            ->assertJsonPath('error.code', 'RECEIPT_NOT_FOUND');
     }
 
     private function payload(): array

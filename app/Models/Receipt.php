@@ -23,4 +23,9 @@ class Receipt extends Model
         'masked_payload' => 'array',
         'printed_at' => 'datetime',
     ];
+
+    public function transaction()
+    {
+        return $this->belongsTo(ServiceTransaction::class, 'transaction_id');
+    }
 }

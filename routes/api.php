@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Accounts\AccountController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\V1\Receipts\ReceiptController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
 use App\Http\Controllers\Api\V1\Transfers\TransferController;
 use Illuminate\Http\Request;
@@ -97,6 +98,11 @@ Route::prefix('v1')->group(function () {
         Route::post(
             '/transfers/internal',
             [TransferController::class, 'internal']
+        );
+
+        Route::get(
+            '/receipts/{reference}',
+            [ReceiptController::class, 'show']
         );
 
         Route::post(

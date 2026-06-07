@@ -90,12 +90,37 @@ class EnrollmentFlowTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonStructure(['request_id', 'expires_in']);
+            ->assertJsonStructure(['request_id', 'expires_in', 'debug_otp']);
 
         $this->assertDatabaseHas('otp_requests', [
             'phone_masked' => '+966500000000',
             'purpose' => 'ENROLLMENT',
             'status' => 'PENDING',
         ]);
+    }
+
+    public function test_debug_otp_is_hidden_when_disabled(): void
+    {
+        config(['services.otp.debug_response' => false]);
+
+        $branch = Branch::create([
+            'branch_code' => 'BR-001',
+            'name' => 'Main Branch',
+            'status' => 'ACTIVE',
+        ]);
+
+        TerminalDevice::create([
+            'branch_id' => $branch->id,
+            'device_code' => 'KIOSK-001',
+            'status' => 'ACTIVE',
+        ]);
+
+        $this->postJson('/api/v1/enrollment/start', [
+            'device_id' => 'KIOSK-001',
+            'customer_identifier' => 'CUST-001',
+            'phone' => '+966500000000',
+        ])
+            ->assertOk()
+            ->assertJsonMissingPath('debug_otp');
     }
 }

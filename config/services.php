@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'otp' => [
+        'debug_response' => env('OTP_DEBUG_RESPONSE', env('APP_ENV') !== 'production'),
+    ],
+
 ];

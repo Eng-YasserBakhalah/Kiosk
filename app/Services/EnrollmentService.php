@@ -52,13 +52,19 @@ class EnrollmentService
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        return [
+        $response = [
             'success' => true,
             'message' => 'OTP sent successfully',
             'request_id' => $otpRequest->id,
             'expires_in' => 300,
             'status_code' => 200,
         ];
+
+        if (config('services.otp.debug_response') && ! app()->environment('production')) {
+            $response['debug_otp'] = (string) $otp;
+        }
+
+        return $response;
     }
 
     public function verifyOtp(array $data): array

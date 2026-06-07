@@ -60,6 +60,7 @@ Base prefix: `/api/v1`
 ## Security Notes
 
 - OTP values are hashed before storage and are not logged.
+- In local/testing environments, `/api/v1/enrollment/start` can return `debug_otp` for temporary manual testing. Disable it with `OTP_DEBUG_RESPONSE=false`.
 - OTP requests expire after five minutes.
 - OTP verification fails permanently after five invalid attempts.
 - Verified OTP requests can only be consumed once.

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Accounts\AccountController;
+use App\Http\Controllers\Api\V1\Admin\OperationalLogController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
@@ -135,6 +136,21 @@ Route::prefix('v1')->group(function () {
         Route::post(
             '/admin/devices/{device_id}/disable',
             [DeviceController::class, 'disable']
+        );
+
+        Route::get(
+            '/admin/audit-logs',
+            [OperationalLogController::class, 'auditLogs']
+        );
+
+        Route::get(
+            '/admin/integration-logs',
+            [OperationalLogController::class, 'integrationLogs']
+        );
+
+        Route::get(
+            '/admin/error-logs',
+            [OperationalLogController::class, 'errorLogs']
         );
     });
 });

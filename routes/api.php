@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\V1\Accounts\AccountController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\V1\Payments\PaymentController;
 use App\Http\Controllers\Api\V1\Receipts\ReceiptController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
+use App\Http\Controllers\Api\V1\Transactions\TransactionController;
 use App\Http\Controllers\Api\V1\Transfers\TransferController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -100,9 +102,29 @@ Route::prefix('v1')->group(function () {
             [TransferController::class, 'internal']
         );
 
+        Route::post(
+            '/payments/mobile-topup',
+            [PaymentController::class, 'mobileTopUp']
+        );
+
+        Route::post(
+            '/payments/bill-payment',
+            [PaymentController::class, 'billPayment']
+        );
+
         Route::get(
             '/receipts/{reference}',
             [ReceiptController::class, 'show']
+        );
+
+        Route::post(
+            '/receipts/{reference}/print',
+            [ReceiptController::class, 'print']
+        );
+
+        Route::get(
+            '/transactions',
+            [TransactionController::class, 'index']
         );
 
         Route::post(

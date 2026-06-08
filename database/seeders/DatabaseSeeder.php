@@ -83,6 +83,15 @@ class DatabaseSeeder extends Seeder
                 'min_amount' => 5,
                 'max_amount' => 500,
             ],
+            [
+                'service_code' => 'BILL_PAYMENT',
+                'service_name' => 'Bill Payment',
+                'category' => 'payments',
+                'api_endpoint_key' => 'payments.bill_payment',
+                'requires_password' => true,
+                'min_amount' => 1,
+                'max_amount' => 10000,
+            ],
         ];
 
         $createdServices = [];

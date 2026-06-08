@@ -20,4 +20,9 @@ class BranchServiceSetting extends Model
         'enabled' => 'boolean',
         'daily_limit' => 'decimal:2',
     ];
+
+    public function service()
+    {
+        return $this->belongsTo(DigitalService::class, 'service_id');
+    }
 }

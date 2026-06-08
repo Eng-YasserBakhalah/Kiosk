@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Accounts\AccountController;
+use App\Http\Controllers\Api\V1\Admin\BranchServiceSettingController;
 use App\Http\Controllers\Api\V1\Admin\OperationalLogController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
@@ -152,6 +153,16 @@ Route::prefix('v1')->group(function () {
             Route::get(
                 '/error-logs',
                 [OperationalLogController::class, 'errorLogs']
+            );
+
+            Route::get(
+                '/branches/{branch_code}/services',
+                [BranchServiceSettingController::class, 'index']
+            );
+
+            Route::put(
+                '/branches/{branch_code}/services/{service_code}',
+                [BranchServiceSettingController::class, 'update']
             );
         });
     });

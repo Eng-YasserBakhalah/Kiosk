@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AttachRequestId;
+use App\Http\Middleware\EnsureAdminUser;
 use App\Support\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -25,6 +26,7 @@ return Application::configure(
         ]);
 
         $middleware->alias([
+            'admin' => EnsureAdminUser::class,
             'jwt.auth' => Authenticate::class,
         ]);
 

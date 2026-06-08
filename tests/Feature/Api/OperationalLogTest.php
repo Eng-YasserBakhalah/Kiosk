@@ -18,7 +18,7 @@ class OperationalLogTest extends TestCase
 
     public function test_authenticated_user_can_list_audit_logs(): void
     {
-        [$token, $device] = $this->loginUser();
+        [$token, $device] = $this->loginUser('ADMIN');
 
         AuditLog::create([
             'actor_type' => 'USER',
@@ -45,7 +45,7 @@ class OperationalLogTest extends TestCase
 
     public function test_authenticated_user_can_list_integration_logs(): void
     {
-        [$token, $device, $user] = $this->loginUser();
+        [$token, $device, $user] = $this->loginUser('ADMIN');
 
         ApiIntegrationLog::create([
             'request_id' => 'REQ-001',
@@ -72,7 +72,7 @@ class OperationalLogTest extends TestCase
 
     public function test_authenticated_user_can_list_error_logs(): void
     {
-        [$token, $device, $user] = $this->loginUser();
+        [$token, $device, $user] = $this->loginUser('ADMIN');
 
         ErrorLog::create([
             'request_id' => 'REQ-001',
@@ -93,7 +93,17 @@ class OperationalLogTest extends TestCase
             ->assertJsonPath('data.error_logs.0.error_code', 'IDEMPOTENCY_KEY_REQUIRED');
     }
 
-    private function loginUser(): array
+    public function test_customer_cannot_list_operational_logs(): void
+    {
+        [$token] = $this->loginUser();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/admin/error-logs')
+            ->assertForbidden()
+            ->assertJsonPath('error.code', 'FORBIDDEN');
+    }
+
+    private function loginUser(string $role = 'CUSTOMER'): array
     {
         $branch = Branch::create([
             'branch_code' => 'BR-001',
@@ -113,6 +123,7 @@ class OperationalLogTest extends TestCase
             'phone_masked' => '+966*******000',
             'password_hash' => Hash::make('Password1'),
             'status' => 'ACTIVE',
+            'role' => $role,
         ]);
 
         $login = $this->postJson('/api/v1/auth/login', [

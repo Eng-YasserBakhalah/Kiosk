@@ -128,29 +128,31 @@ Route::prefix('v1')->group(function () {
             [TransactionController::class, 'index']
         );
 
-        Route::post(
-            '/admin/devices/{device_id}/enable',
-            [DeviceController::class, 'enable']
-        );
+        Route::middleware('admin')->prefix('admin')->group(function () {
+            Route::post(
+                '/devices/{device_id}/enable',
+                [DeviceController::class, 'enable']
+            );
 
-        Route::post(
-            '/admin/devices/{device_id}/disable',
-            [DeviceController::class, 'disable']
-        );
+            Route::post(
+                '/devices/{device_id}/disable',
+                [DeviceController::class, 'disable']
+            );
 
-        Route::get(
-            '/admin/audit-logs',
-            [OperationalLogController::class, 'auditLogs']
-        );
+            Route::get(
+                '/audit-logs',
+                [OperationalLogController::class, 'auditLogs']
+            );
 
-        Route::get(
-            '/admin/integration-logs',
-            [OperationalLogController::class, 'integrationLogs']
-        );
+            Route::get(
+                '/integration-logs',
+                [OperationalLogController::class, 'integrationLogs']
+            );
 
-        Route::get(
-            '/admin/error-logs',
-            [OperationalLogController::class, 'errorLogs']
-        );
+            Route::get(
+                '/error-logs',
+                [OperationalLogController::class, 'errorLogs']
+            );
+        });
     });
 });

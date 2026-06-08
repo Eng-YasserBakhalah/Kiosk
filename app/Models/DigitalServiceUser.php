@@ -17,6 +17,7 @@ class DigitalServiceUser extends Authenticatable implements JWTSubject
         'password_hash',
         'biometric_enabled',
         'status',
+        'role',
         'failed_login_attempts',
         'locked_until',
         'last_login_at',

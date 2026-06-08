@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
                 'phone_masked' => '+966*******000',
                 'password_hash' => Hash::make('Password1'),
                 'status' => 'ACTIVE',
+                'role' => 'ADMIN',
             ]
         );
 

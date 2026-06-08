@@ -56,7 +56,7 @@ class DeviceManagementTest extends TestCase
     public function test_authenticated_admin_can_disable_and_enable_device(): void
     {
         $device = $this->createDevice();
-        $token = $this->login($device);
+        $token = $this->login($device, 'ADMIN');
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson("/api/v1/admin/devices/{$device->device_code}/disable")
@@ -67,6 +67,17 @@ class DeviceManagementTest extends TestCase
             ->postJson("/api/v1/admin/devices/{$device->device_code}/enable")
             ->assertOk()
             ->assertJsonPath('data.device.status', 'ACTIVE');
+    }
+
+    public function test_customer_cannot_disable_device(): void
+    {
+        $device = $this->createDevice();
+        $token = $this->login($device);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson("/api/v1/admin/devices/{$device->device_code}/disable")
+            ->assertForbidden()
+            ->assertJsonPath('error.code', 'FORBIDDEN');
     }
 
     private function createDevice(): TerminalDevice
@@ -84,7 +95,7 @@ class DeviceManagementTest extends TestCase
         ]);
     }
 
-    private function login(TerminalDevice $device): string
+    private function login(TerminalDevice $device, string $role = 'CUSTOMER'): string
     {
         DigitalServiceUser::create([
             'bank_customer_ref' => 'BANK-100001',
@@ -92,6 +103,7 @@ class DeviceManagementTest extends TestCase
             'phone_masked' => '+966*******000',
             'password_hash' => Hash::make('Password1'),
             'status' => 'ACTIVE',
+            'role' => $role,
         ]);
 
         $login = $this->postJson('/api/v1/auth/login', [

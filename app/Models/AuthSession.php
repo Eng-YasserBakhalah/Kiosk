@@ -33,4 +33,9 @@ class AuthSession extends Model
     {
         return $this->belongsTo(TerminalDevice::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(DigitalServiceUser::class, 'user_id');
+    }
 }

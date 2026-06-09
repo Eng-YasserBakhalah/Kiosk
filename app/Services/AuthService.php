@@ -7,6 +7,7 @@ use App\Models\DigitalServiceUser;
 use App\Models\LoginLog;
 use App\Models\TerminalDevice;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
@@ -98,11 +99,13 @@ class AuthService
         ]);
 
         $token = JWTAuth::fromUser($user);
+        $refreshToken = $this->newRefreshToken();
 
         AuthSession::create([
             'user_id' => $user->id,
             'terminal_device_id' => $device->id,
             'access_token_hash' => hash('sha256', $token),
+            'refresh_token_hash' => hash('sha256', $refreshToken),
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'login_method' => 'PASSWORD',
@@ -117,10 +120,65 @@ class AuthService
             'success' => true,
             'message' => 'Login successful',
             'token' => $token,
+            'refresh_token' => $refreshToken,
+            'expires_in' => (int) config('jwt.ttl', 60) * 60,
             'user' => [
                 'id' => $user->id,
                 'username' => $user->username,
             ],
+            'status_code' => 200,
+        ];
+    }
+
+    public function refresh(array $data): array
+    {
+        $session = AuthSession::query()
+            ->with(['terminalDevice', 'user'])
+            ->where('refresh_token_hash', hash('sha256', $data['refresh_token']))
+            ->where('status', 'ACTIVE')
+            ->first();
+
+        if (! $session || $session->login_at->lt(now()->subMinutes((int) config('jwt.refresh_ttl', 20160)))) {
+            return [
+                'success' => false,
+                'message' => 'Invalid refresh token',
+                'status_code' => 401,
+            ];
+        }
+
+        if ($session->user?->status !== 'ACTIVE') {
+            return [
+                'success' => false,
+                'message' => 'Account inactive',
+                'status_code' => 403,
+            ];
+        }
+
+        if ($session->terminalDevice?->status !== 'ACTIVE') {
+            return [
+                'success' => false,
+                'message' => 'Device inactive',
+                'status_code' => 403,
+            ];
+        }
+
+        $token = JWTAuth::fromUser($session->user);
+        $refreshToken = $this->newRefreshToken();
+
+        $session->update([
+            'access_token_hash' => hash('sha256', $token),
+            'refresh_token_hash' => hash('sha256', $refreshToken),
+            'expires_at' => now()->addMinutes((int) config('jwt.ttl', 60)),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Token refreshed successfully',
+            'token' => $token,
+            'refresh_token' => $refreshToken,
+            'expires_in' => (int) config('jwt.ttl', 60) * 60,
             'status_code' => 200,
         ];
     }
@@ -194,5 +252,10 @@ class AuthService
             'success' => $success,
             'failure_reason' => $failureReason,
         ]);
+    }
+
+    private function newRefreshToken(): string
+    {
+        return Str::random(80);
     }
 }

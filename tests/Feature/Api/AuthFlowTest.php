@@ -34,12 +34,78 @@ class AuthFlowTest extends TestCase
         $login
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonStructure(['token']);
+            ->assertJsonStructure(['token', 'refresh_token', 'expires_in']);
 
         $this->withHeader('Authorization', 'Bearer '.$login->json('token'))
             ->postJson('/api/v1/auth/logout')
             ->assertOk()
             ->assertJsonPath('success', true);
+    }
+
+    public function test_refresh_token_issues_new_access_and_refresh_tokens(): void
+    {
+        $this->createActiveDevice();
+
+        DigitalServiceUser::create([
+            'bank_customer_ref' => 'BANK-100001',
+            'username' => 'USR10001',
+            'phone_masked' => '+966*******000',
+            'password_hash' => Hash::make('Password1'),
+            'status' => 'ACTIVE',
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'device_id' => 'KIOSK-001',
+            'username' => 'USR10001',
+            'password' => 'Password1',
+        ])->assertOk();
+
+        $refresh = $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $login->json('refresh_token'),
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['token', 'refresh_token', 'expires_in']);
+
+        $this->assertNotSame($login->json('refresh_token'), $refresh->json('refresh_token'));
+    }
+
+    public function test_refresh_token_is_rotated_after_use(): void
+    {
+        $this->createActiveDevice();
+
+        DigitalServiceUser::create([
+            'bank_customer_ref' => 'BANK-100001',
+            'username' => 'USR10001',
+            'phone_masked' => '+966*******000',
+            'password_hash' => Hash::make('Password1'),
+            'status' => 'ACTIVE',
+        ]);
+
+        $login = $this->postJson('/api/v1/auth/login', [
+            'device_id' => 'KIOSK-001',
+            'username' => 'USR10001',
+            'password' => 'Password1',
+        ])->assertOk();
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $login->json('refresh_token'),
+        ])->assertOk();
+
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => $login->json('refresh_token'),
+        ])
+            ->assertUnauthorized()
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_invalid_refresh_token_is_rejected(): void
+    {
+        $this->postJson('/api/v1/auth/refresh', [
+            'refresh_token' => str_repeat('x', 80),
+        ])
+            ->assertUnauthorized()
+            ->assertJsonPath('success', false);
     }
 
     public function test_logout_without_token_returns_unauthorized_json(): void

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RefreshTokenRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 
@@ -32,6 +33,18 @@ class AuthController extends Controller
     {
         $result = $this->authService
             ->logout();
+
+        return response()->json(
+            collect($result)
+                ->except('status_code'),
+            $result['status_code']
+        );
+    }
+
+    public function refresh(RefreshTokenRequest $request): JsonResponse
+    {
+        $result = $this->authService
+            ->refresh($request->validated());
 
         return response()->json(
             collect($result)

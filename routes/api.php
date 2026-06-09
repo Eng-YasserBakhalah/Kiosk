@@ -78,6 +78,11 @@ Route::prefix('v1')->group(function () {
         [AuthController::class, 'logout']
     );
 
+    Route::post(
+        '/auth/refresh',
+        [AuthController::class, 'refresh']
+    );
+
     Route::middleware('jwt.auth')->group(function () {
         Route::get(
             '/services',

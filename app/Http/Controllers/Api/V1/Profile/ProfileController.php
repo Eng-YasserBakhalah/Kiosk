@@ -17,6 +17,50 @@ class ProfileController extends Controller
         protected SessionContextService $sessionContext
     ) {}
 
+    public function me(): JsonResponse
+    {
+        $session = $this->sessionContext->current()?->load(['user', 'terminalDevice.branch']);
+
+        if (! $session?->user || ! $session->terminalDevice) {
+            return ApiResponse::error('SESSION_EXPIRED', 'Session is not active', 401);
+        }
+
+        return ApiResponse::success([
+            'user' => [
+                'id' => $session->user->id,
+                'username' => $session->user->username,
+                'bank_customer_ref' => $session->user->bank_customer_ref,
+                'phone_masked' => $session->user->phone_masked,
+                'status' => $session->user->status,
+                'role' => $session->user->role,
+                'biometric_enabled' => $session->user->biometric_enabled,
+                'last_login_at' => $session->user->last_login_at,
+            ],
+            'session' => [
+                'id' => $session->id,
+                'login_method' => $session->login_method,
+                'login_at' => $session->login_at,
+                'expires_at' => $session->expires_at,
+                'status' => $session->status,
+            ],
+            'device' => [
+                'id' => $session->terminalDevice->id,
+                'device_code' => $session->terminalDevice->device_code,
+                'status' => $session->terminalDevice->status,
+                'location_label' => $session->terminalDevice->location_label,
+                'kiosk_mode_enabled' => $session->terminalDevice->kiosk_mode_enabled,
+                'last_heartbeat_at' => $session->terminalDevice->last_heartbeat_at,
+            ],
+            'branch' => $session->terminalDevice->branch ? [
+                'id' => $session->terminalDevice->branch->id,
+                'branch_code' => $session->terminalDevice->branch->branch_code,
+                'name' => $session->terminalDevice->branch->name,
+                'city' => $session->terminalDevice->branch->city,
+                'status' => $session->terminalDevice->branch->status,
+            ] : null,
+        ], 'Profile loaded successfully');
+    }
+
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         $session = $this->sessionContext->current()?->load('user');

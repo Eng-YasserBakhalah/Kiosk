@@ -90,6 +90,11 @@ Route::prefix('v1')->group(function () {
             [ServiceCatalogController::class, 'index']
         );
 
+        Route::get(
+            '/profile/me',
+            [ProfileController::class, 'me']
+        );
+
         Route::post(
             '/profile/change-password',
             [ProfileController::class, 'changePassword']

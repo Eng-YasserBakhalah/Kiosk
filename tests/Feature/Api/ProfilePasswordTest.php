@@ -13,6 +13,24 @@ class ProfilePasswordTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_authenticated_user_can_load_profile_context(): void
+    {
+        $token = $this->loginUser();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/profile/me')
+            ->assertOk()
+            ->assertJsonPath('data.user.username', 'USR10001')
+            ->assertJsonPath('data.user.status', 'ACTIVE')
+            ->assertJsonPath('data.device.device_code', 'KIOSK-001')
+            ->assertJsonPath('data.branch.branch_code', 'BR-001')
+            ->assertJsonStructure([
+                'data' => [
+                    'session' => ['id', 'login_at', 'expires_at', 'status'],
+                ],
+            ]);
+    }
+
     public function test_authenticated_user_can_change_password(): void
     {
         $token = $this->loginUser();
@@ -95,6 +113,7 @@ class ProfilePasswordTest extends TestCase
             'phone_masked' => '+966*******000',
             'password_hash' => Hash::make('Password1'),
             'status' => 'ACTIVE',
+            'role' => 'CUSTOMER',
         ]);
 
         $login = $this->postJson('/api/v1/auth/login', [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Device;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Device\ChangeDeviceStatusRequest;
 use App\Http\Requests\Device\HeartbeatRequest;
+use App\Http\Requests\Device\ListDevicesRequest;
 use App\Http\Requests\Device\RegisterDeviceRequest;
 use App\Services\DeviceService;
 use App\Support\ApiResponse;
@@ -47,6 +48,16 @@ class DeviceController extends Controller
             ['device' => $result['device']],
             $result['message'],
             $result['status_code']
+        );
+    }
+
+    public function index(ListDevicesRequest $request): JsonResponse
+    {
+        $result = $this->deviceService->list($request->validated());
+
+        return ApiResponse::success(
+            ['devices' => $result['devices']],
+            $result['message']
         );
     }
 

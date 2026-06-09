@@ -8,6 +8,28 @@ use App\Models\TerminalDevice;
 
 class DeviceService
 {
+    public function list(array $filters = []): array
+    {
+        $devices = TerminalDevice::query()
+            ->with('branch')
+            ->when($filters['status'] ?? null, function ($query, string $status): void {
+                $query->where('status', $status);
+            })
+            ->when($filters['branch_code'] ?? null, function ($query, string $branchCode): void {
+                $query->whereHas('branch', fn ($branchQuery) => $branchQuery->where('branch_code', $branchCode));
+            })
+            ->orderBy('device_code')
+            ->limit($filters['limit'] ?? 50)
+            ->get();
+
+        return [
+            'success' => true,
+            'message' => 'Devices loaded successfully',
+            'devices' => $devices->map(fn (TerminalDevice $device): array => $this->formatDevice($device))->values()->all(),
+            'status_code' => 200,
+        ];
+    }
+
     public function register(array $data): array
     {
         $branch = Branch::where('branch_code', $data['branch_code'])->first();

@@ -69,6 +69,19 @@ class DeviceManagementTest extends TestCase
             ->assertJsonPath('data.device.status', 'ACTIVE');
     }
 
+    public function test_authenticated_admin_can_list_devices(): void
+    {
+        $device = $this->createDevice();
+        $token = $this->login($device, 'ADMIN');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/admin/devices?status=ACTIVE&branch_code=BR-001')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.devices')
+            ->assertJsonPath('data.devices.0.device_code', 'DEV001')
+            ->assertJsonPath('data.devices.0.branch.branch_code', 'BR-001');
+    }
+
     public function test_customer_cannot_disable_device(): void
     {
         $device = $this->createDevice();
@@ -76,6 +89,17 @@ class DeviceManagementTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson("/api/v1/admin/devices/{$device->device_code}/disable")
+            ->assertForbidden()
+            ->assertJsonPath('error.code', 'FORBIDDEN');
+    }
+
+    public function test_customer_cannot_list_devices(): void
+    {
+        $device = $this->createDevice();
+        $token = $this->login($device);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/admin/devices')
             ->assertForbidden()
             ->assertJsonPath('error.code', 'FORBIDDEN');
     }

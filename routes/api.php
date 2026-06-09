@@ -151,6 +151,11 @@ Route::prefix('v1')->group(function () {
         );
 
         Route::middleware('admin')->prefix('admin')->group(function () {
+            Route::get(
+                '/devices',
+                [DeviceController::class, 'index']
+            );
+
             Route::post(
                 '/devices/{device_id}/enable',
                 [DeviceController::class, 'enable']

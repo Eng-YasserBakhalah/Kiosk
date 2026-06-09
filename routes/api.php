@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Device\DeviceController;
 use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
 use App\Http\Controllers\Api\V1\Payments\PaymentController;
+use App\Http\Controllers\Api\V1\Profile\ProfileController;
 use App\Http\Controllers\Api\V1\Receipts\ReceiptController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
 use App\Http\Controllers\Api\V1\Transactions\TransactionController;
@@ -87,6 +88,11 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/services',
             [ServiceCatalogController::class, 'index']
+        );
+
+        Route::post(
+            '/profile/change-password',
+            [ProfileController::class, 'changePassword']
         );
 
         Route::get(

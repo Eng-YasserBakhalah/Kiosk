@@ -51,6 +51,38 @@ class TransactionHistoryTest extends TestCase
             ->assertJsonPath('data.transactions.0.bank_reference', 'TOPUP-REF');
     }
 
+    public function test_authenticated_user_can_load_own_transaction_details(): void
+    {
+        [$token, $user] = $this->loginUser();
+        $transaction = $this->transactionFor($user, 'BILL_PAYMENT', 'BILL-REF');
+
+        Receipt::create([
+            'transaction_id' => $transaction->id,
+            'receipt_number' => 'RCT-BILL',
+            'bank_reference' => 'BILL-REF',
+            'masked_payload' => ['status' => 'SUCCESS'],
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/transactions/'.$transaction->request_id)
+            ->assertOk()
+            ->assertJsonPath('data.transaction.request_id', $transaction->request_id)
+            ->assertJsonPath('data.transaction.transaction_type', 'BILL_PAYMENT')
+            ->assertJsonPath('data.transaction.receipt.receipt_number', 'RCT-BILL')
+            ->assertJsonPath('data.transaction.metadata.status', 'APPROVED');
+    }
+
+    public function test_transaction_details_for_another_user_are_not_returned(): void
+    {
+        [$token] = $this->loginUser();
+        $transaction = $this->transactionFor($this->otherUser(), 'MOBILE_TOPUP', 'OTHER-REF');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/transactions/'.$transaction->request_id)
+            ->assertNotFound()
+            ->assertJsonPath('error.code', 'TRANSACTION_NOT_FOUND');
+    }
+
     private function loginUser(): array
     {
         $branch = Branch::create([
@@ -106,6 +138,7 @@ class TransactionHistoryTest extends TestCase
             'response_code' => '00',
             'response_message' => 'Approved',
             'completed_at' => now(),
+            'metadata' => ['status' => 'APPROVED'],
         ]);
     }
 }

@@ -129,6 +129,11 @@ Route::prefix('v1')->group(function () {
             [TransactionController::class, 'index']
         );
 
+        Route::get(
+            '/transactions/{request_id}',
+            [TransactionController::class, 'show']
+        );
+
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::post(
                 '/devices/{device_id}/enable',

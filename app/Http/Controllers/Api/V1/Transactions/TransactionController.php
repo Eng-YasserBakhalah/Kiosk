@@ -43,22 +43,66 @@ class TransactionController extends Controller
             ->get();
 
         return ApiResponse::success([
-            'transactions' => $transactions->map(fn (ServiceTransaction $transaction): array => [
-                'request_id' => $transaction->request_id,
-                'bank_reference' => $transaction->bank_reference,
-                'transaction_type' => $transaction->transaction_type,
-                'amount' => $transaction->amount,
-                'currency' => $transaction->currency,
-                'status' => $transaction->status,
-                'response_code' => $transaction->response_code,
-                'response_message' => $transaction->response_message,
-                'started_at' => $transaction->started_at,
-                'completed_at' => $transaction->completed_at,
-                'receipt' => $transaction->receipt ? [
-                    'receipt_number' => $transaction->receipt->receipt_number,
-                    'bank_reference' => $transaction->receipt->bank_reference,
-                ] : null,
-            ])->values(),
+            'transactions' => $transactions->map(
+                fn (ServiceTransaction $transaction): array => $this->formatTransaction($transaction)
+            )->values(),
         ], 'Transactions loaded successfully');
+    }
+
+    public function show(string $requestId): JsonResponse
+    {
+        $session = $this->sessionContext->current();
+
+        if (! $session) {
+            return ApiResponse::error('SESSION_EXPIRED', 'Session is not active', 401);
+        }
+
+        $transaction = ServiceTransaction::query()
+            ->with('receipt')
+            ->where('request_id', $requestId)
+            ->where('user_id', $session->user_id)
+            ->first();
+
+        if (! $transaction) {
+            return ApiResponse::error(
+                'TRANSACTION_NOT_FOUND',
+                'Transaction not found',
+                404,
+                null,
+                null,
+                self::class
+            );
+        }
+
+        return ApiResponse::success([
+            'transaction' => $this->formatTransaction($transaction, includeMetadata: true),
+        ], 'Transaction loaded successfully');
+    }
+
+    private function formatTransaction(ServiceTransaction $transaction, bool $includeMetadata = false): array
+    {
+        $data = [
+            'request_id' => $transaction->request_id,
+            'bank_reference' => $transaction->bank_reference,
+            'transaction_type' => $transaction->transaction_type,
+            'amount' => $transaction->amount,
+            'currency' => $transaction->currency,
+            'status' => $transaction->status,
+            'response_code' => $transaction->response_code,
+            'response_message' => $transaction->response_message,
+            'started_at' => $transaction->started_at,
+            'completed_at' => $transaction->completed_at,
+            'receipt' => $transaction->receipt ? [
+                'receipt_number' => $transaction->receipt->receipt_number,
+                'bank_reference' => $transaction->receipt->bank_reference,
+                'printed_at' => $transaction->receipt->printed_at,
+            ] : null,
+        ];
+
+        if ($includeMetadata) {
+            $data['metadata'] = $transaction->metadata;
+        }
+
+        return $data;
     }
 }

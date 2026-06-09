@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AccountOpening\AccountOpeningController;
 use App\Http\Controllers\Api\V1\Accounts\AccountController;
+use App\Http\Controllers\Api\V1\Admin\AnalyticsController;
 use App\Http\Controllers\Api\V1\Admin\BranchServiceSettingController;
 use App\Http\Controllers\Api\V1\Admin\OperationalLogController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
@@ -166,6 +167,11 @@ Route::prefix('v1')->group(function () {
             Route::get(
                 '/devices',
                 [DeviceController::class, 'index']
+            );
+
+            Route::get(
+                '/analytics/summary',
+                [AnalyticsController::class, 'summary']
             );
 
             Route::post(

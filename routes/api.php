@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AccountOpening\AccountOpeningController;
 use App\Http\Controllers\Api\V1\Accounts\AccountController;
 use App\Http\Controllers\Api\V1\Admin\BranchServiceSettingController;
 use App\Http\Controllers\Api\V1\Admin\OperationalLogController;
@@ -134,6 +135,11 @@ Route::prefix('v1')->group(function () {
         Route::post(
             '/remittances/inquiry',
             [RemittanceController::class, 'inquiry']
+        );
+
+        Route::post(
+            '/account-opening/requests',
+            [AccountOpeningController::class, 'store']
         );
 
         Route::get(

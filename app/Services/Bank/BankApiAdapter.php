@@ -166,6 +166,29 @@ class BankApiAdapter
         ]);
     }
 
+    public function accountOpeningRequest(AuthSession $session, string $requestId, array $payload): array
+    {
+        return $this->recordMockCall($session, $requestId, 'account_opening.requests.create', [
+            'bank_success' => true,
+            'bank_reference' => 'MOCK-AO-'.now()->format('YmdHis'),
+            'bank_code' => '00',
+            'message' => 'Submitted',
+            'payload' => [
+                'tracking_number' => 'AOR-'.now()->format('YmdHis').'-'.strtoupper(substr($requestId, -6)),
+                'status' => 'SUBMITTED',
+                'account_type' => $payload['account_type'],
+                'currency' => $payload['currency'],
+                'national_id' => $this->maskReference($payload['national_id']),
+                'phone' => $this->maskPhone($payload['phone']),
+            ],
+        ], 'POST', [
+            'account_type' => $payload['account_type'],
+            'currency' => $payload['currency'],
+            'phone' => $this->maskPhone($payload['phone']),
+            'national_id' => $this->maskReference($payload['national_id']),
+        ]);
+    }
+
     private function recordMockCall(
         AuthSession $session,
         string $requestId,

@@ -100,6 +100,13 @@ class DatabaseSeeder extends Seeder
                 'api_endpoint_key' => 'remittances.inquiry',
                 'requires_password' => true,
             ],
+            [
+                'service_code' => 'ACCOUNT_OPENING_REQUEST',
+                'service_name' => 'Account Opening Request',
+                'category' => 'account_opening',
+                'api_endpoint_key' => 'account_opening.requests.create',
+                'requires_password' => true,
+            ],
         ];
 
         $createdServices = [];

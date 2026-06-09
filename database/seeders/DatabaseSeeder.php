@@ -93,6 +93,13 @@ class DatabaseSeeder extends Seeder
                 'min_amount' => 1,
                 'max_amount' => 10000,
             ],
+            [
+                'service_code' => 'REMITTANCE_INQUIRY',
+                'service_name' => 'Remittance Inquiry',
+                'category' => 'remittances',
+                'api_endpoint_key' => 'remittances.inquiry',
+                'requires_password' => true,
+            ],
         ];
 
         $createdServices = [];

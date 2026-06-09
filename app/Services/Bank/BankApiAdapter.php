@@ -147,6 +147,25 @@ class BankApiAdapter
         ]);
     }
 
+    public function remittanceInquiry(AuthSession $session, string $requestId, array $payload): array
+    {
+        return $this->recordMockCall($session, $requestId, 'remittances.inquiry', [
+            'bank_success' => true,
+            'bank_reference' => 'MOCK-REM-'.now()->format('YmdHis'),
+            'bank_code' => '00',
+            'message' => 'Approved',
+            'payload' => [
+                'remittance_number' => $this->maskReference($payload['remittance_number']),
+                'status' => 'AVAILABLE',
+                'currency' => 'SAR',
+                'last_updated_at' => now()->toISOString(),
+            ],
+        ], 'POST', [
+            'remittance_number' => $this->maskReference($payload['remittance_number']),
+            'phone' => isset($payload['phone']) ? $this->maskPhone($payload['phone']) : null,
+        ]);
+    }
+
     private function recordMockCall(
         AuthSession $session,
         string $requestId,
@@ -192,6 +211,11 @@ class BankApiAdapter
     }
 
     private function maskBillNumber(string $value): string
+    {
+        return '****'.substr($value, -4);
+    }
+
+    private function maskReference(string $value): string
     {
         return '****'.substr($value, -4);
     }

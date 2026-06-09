@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Enrollment\EnrollmentController;
 use App\Http\Controllers\Api\V1\Payments\PaymentController;
 use App\Http\Controllers\Api\V1\Profile\ProfileController;
 use App\Http\Controllers\Api\V1\Receipts\ReceiptController;
+use App\Http\Controllers\Api\V1\Remittances\RemittanceController;
 use App\Http\Controllers\Api\V1\Services\ServiceCatalogController;
 use App\Http\Controllers\Api\V1\Transactions\TransactionController;
 use App\Http\Controllers\Api\V1\Transfers\TransferController;
@@ -128,6 +129,11 @@ Route::prefix('v1')->group(function () {
         Route::post(
             '/payments/bill-payment',
             [PaymentController::class, 'billPayment']
+        );
+
+        Route::post(
+            '/remittances/inquiry',
+            [RemittanceController::class, 'inquiry']
         );
 
         Route::get(

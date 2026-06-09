@@ -69,6 +69,21 @@ class TransferController extends Controller
             ], 'Duplicate request returned existing transaction');
         }
 
+        if ($amountError = $this->serviceCatalog->validateAmountForBranch(
+            'INTERNAL_TRANSFER',
+            $session->terminalDevice->branch_id,
+            (float) $request->validated('amount')
+        )) {
+            return ApiResponse::error(
+                $amountError['code'],
+                $amountError['message'],
+                $amountError['status'],
+                null,
+                'INTERNAL_TRANSFER',
+                self::class
+            );
+        }
+
         $requestId = $request->attributes->get('request_id');
         $bankResponse = $this->bankApi->internalTransfer($session, $requestId, $request->validated());
         $service = DigitalService::where('service_code', 'INTERNAL_TRANSFER')->first();

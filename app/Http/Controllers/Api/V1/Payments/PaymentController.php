@@ -73,6 +73,21 @@ class PaymentController extends Controller
         $payload = $request->validated();
         $payload['currency'] ??= 'SAR';
 
+        if ($amountError = $this->serviceCatalog->validateAmountForBranch(
+            'MOBILE_TOPUP',
+            $session->terminalDevice->branch_id,
+            (float) $payload['amount']
+        )) {
+            return ApiResponse::error(
+                $amountError['code'],
+                $amountError['message'],
+                $amountError['status'],
+                null,
+                'MOBILE_TOPUP',
+                self::class
+            );
+        }
+
         $requestId = $request->attributes->get('request_id');
         $bankResponse = $this->bankApi->mobileTopUp($session, $requestId, $payload);
         $service = DigitalService::where('service_code', 'MOBILE_TOPUP')->first();
@@ -154,6 +169,21 @@ class PaymentController extends Controller
 
         $payload = $request->validated();
         $payload['currency'] ??= 'SAR';
+
+        if ($amountError = $this->serviceCatalog->validateAmountForBranch(
+            'BILL_PAYMENT',
+            $session->terminalDevice->branch_id,
+            (float) $payload['amount']
+        )) {
+            return ApiResponse::error(
+                $amountError['code'],
+                $amountError['message'],
+                $amountError['status'],
+                null,
+                'BILL_PAYMENT',
+                self::class
+            );
+        }
 
         $requestId = $request->attributes->get('request_id');
         $bankResponse = $this->bankApi->billPayment($session, $requestId, $payload);

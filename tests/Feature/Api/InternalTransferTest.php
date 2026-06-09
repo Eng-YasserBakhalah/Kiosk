@@ -84,6 +84,21 @@ class InternalTransferTest extends TestCase
         $this->assertDatabaseCount('receipts', 1);
     }
 
+    public function test_internal_transfer_rejects_amount_below_service_minimum(): void
+    {
+        $token = $this->loginWithTransferService(minAmount: 200);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/v1/transfers/internal', $this->payload())
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'AMOUNT_BELOW_SERVICE_MINIMUM');
+
+        $this->assertDatabaseMissing('service_transactions', [
+            'transaction_type' => 'INTERNAL_TRANSFER',
+        ]);
+    }
+
     public function test_receipt_can_be_loaded_by_receipt_number_or_bank_reference(): void
     {
         $token = $this->loginWithTransferService();
@@ -152,7 +167,7 @@ class InternalTransferTest extends TestCase
         ];
     }
 
-    private function loginWithTransferService(): string
+    private function loginWithTransferService(?float $minAmount = null): string
     {
         $branch = Branch::create([
             'branch_code' => 'BR-001',
@@ -181,6 +196,7 @@ class InternalTransferTest extends TestCase
             'requires_otp' => true,
             'requires_password' => true,
             'enabled' => true,
+            'min_amount' => $minAmount,
         ]);
 
         BranchServiceSetting::create([

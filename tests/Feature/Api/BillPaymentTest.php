@@ -83,6 +83,39 @@ class BillPaymentTest extends TestCase
         $this->assertDatabaseCount('receipts', 1);
     }
 
+    public function test_bill_payment_rejects_amount_above_service_maximum(): void
+    {
+        $token = $this->loginWithBillPaymentService(maxAmount: 100);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/v1/payments/bill-payment', $this->payload())
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'AMOUNT_ABOVE_SERVICE_MAXIMUM');
+
+        $this->assertDatabaseMissing('service_transactions', [
+            'transaction_type' => 'BILL_PAYMENT',
+        ]);
+    }
+
+    public function test_bill_payment_rejects_daily_limit_exceeded(): void
+    {
+        $token = $this->loginWithBillPaymentService(dailyLimit: 200);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/v1/payments/bill-payment', $this->payload())
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson('/api/v1/payments/bill-payment', $this->payload())
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'DAILY_LIMIT_EXCEEDED');
+
+        $this->assertDatabaseCount('service_transactions', 1);
+    }
+
     private function payload(): array
     {
         return [
@@ -94,7 +127,7 @@ class BillPaymentTest extends TestCase
         ];
     }
 
-    private function loginWithBillPaymentService(): string
+    private function loginWithBillPaymentService(?float $maxAmount = null, ?float $dailyLimit = null): string
     {
         $branch = Branch::create([
             'branch_code' => 'BR-001',
@@ -123,12 +156,14 @@ class BillPaymentTest extends TestCase
             'requires_otp' => false,
             'requires_password' => true,
             'enabled' => true,
+            'max_amount' => $maxAmount,
         ]);
 
         BranchServiceSetting::create([
             'branch_id' => $branch->id,
             'service_id' => $service->id,
             'enabled' => true,
+            'daily_limit' => $dailyLimit,
         ]);
 
         $login = $this->postJson('/api/v1/auth/login', [
